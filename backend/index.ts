@@ -3,11 +3,37 @@ import cors from "cors";
 import express, { NextFunction, Request, Response,Express } from "express";
 import connectDB from "./config/database";
 import route from "./route";
+import http from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 
 dotenv.config({ path: "./config.env" });
 
 const app:Express = express();
 const port = process.env.PORT || 5001;
+
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: ["http://localhost:3000"],
+    methods: ["GET", "POST"],
+  },
+});
+
+io.listen(5000);
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  socket.on('flowData', (data) => {
+    console.log('Received flow data:', data);
+    // Broadcast the data to all connected clients
+    socket.broadcast.emit('flowData', data);
+  });
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+
+});
 
 connectDB();
 

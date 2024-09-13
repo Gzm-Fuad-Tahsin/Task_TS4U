@@ -8,9 +8,30 @@ const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
 const database_1 = __importDefault(require("./config/database"));
 const route_1 = __importDefault(require("./route"));
+const http_1 = __importDefault(require("http"));
+const socket_io_1 = require("socket.io");
 dotenv_1.default.config({ path: "./config.env" });
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5001;
+const server = http_1.default.createServer(app);
+const io = new socket_io_1.Server(server, {
+    cors: {
+        origin: ["http://localhost:3000"],
+        methods: ["GET", "POST"],
+    },
+});
+io.listen(5000);
+io.on('connection', (socket) => {
+    console.log('A user connected');
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
+    socket.on('flowData', (data) => {
+        console.log('Received flow data:', data);
+        // Broadcast the data to all connected clients
+        socket.broadcast.emit('flowData', data);
+    });
+});
 (0, database_1.default)();
 const corsOptions = {
     origin: ["http://localhost", "http://localhost:3000"],

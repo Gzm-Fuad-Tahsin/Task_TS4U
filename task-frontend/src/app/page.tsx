@@ -1,31 +1,40 @@
-'use client'
+"use client";
 import {
+  addEdge,
   Controls,
   Panel,
   ReactFlow,
   ReactFlowProvider,
-  addEdge,
   useEdgesState,
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/base.css";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useRef, useState } from "react";
-
+import axios from "axios";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
+import CustomNode from "./CustomNode";
 import { DnDProvider, useDnD } from "./DnDContext";
+import "./index.css";
 import Sidebar from "./Sidebar";
 
-import axios from "axios";
-import "../../tailwind.config";
-import CustomNode from "./CustomNode";
-import "./index.css";
+interface NodeData {
+  label: string;
+}
+
+interface CustomNodeProps {
+  id: string;
+  data: NodeData;
+  type: string;
+  position: { x: number; y: number };
+}
 
 const nodeTypes = {
   custom: CustomNode,
 };
 
-const initialNodes = [
+const initialNodes: CustomNodeProps[] = [
   {
     id: "1",
     type: "custom",
@@ -37,11 +46,13 @@ const initialNodes = [
 let id = 0;
 const getId = () => `dndnode_${id++}`;
 
-const DnDFlow = () => {
-  const reactFlowWrapper = useRef(null);
+const socket: Socket = io("http://localhost:5000");
+
+const DnDFlow: React.FC = () => {
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [rfInstance, setRfInstance] = useState(null);
+  const [rfInstance, setRfInstance] = useState<ReactFlow | null>(null);
   const { screenToFlowPosition } = useReactFlow();
   const [type] = useDnD();
 
@@ -59,14 +70,10 @@ const DnDFlow = () => {
     (event) => {
       event.preventDefault();
 
-      // check if the dropped element is valid
       if (!type) {
         return;
       }
 
-      // project was renamed to screenToFlowPosition
-      // and you don't need to subtract the reactFlowBounds.left/top anymore
-      // details: https://reactflow.dev/whats-new/2023-11-10
       const position = screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
@@ -82,7 +89,7 @@ const DnDFlow = () => {
     },
     [screenToFlowPosition, type]
   );
-  const flowKey = "reactFlowData";
+
   const getData = async () => {
     try {
       const res = await axios.get("https://api.ipify.org/?format=json");
@@ -98,28 +105,21 @@ const DnDFlow = () => {
     console.log("onSave triggered");
     console.log("rfInstance:", rfInstance);
 
-    // Get the IP address
     const ipAddress = await getData(); // Fetch IP address
 
     if (rfInstance) {
       const flow = rfInstance.toObject();
-
-      // Prepare the data to be sent with the IP address
       const data = {
         flow,
         ipAddress,
       };
 
-      // Log the data to be sent
       console.log("Data to send:", JSON.stringify(data));
 
-      // Send the data to the backend using Axios
       try {
-        await axios
-          .post("http://localhost:5001/api/v1/auth/flowdata", data)
-          .then((response) => {
-            console.log(response);
-          });
+        await axios.post("http://localhost:5001/api/v1/auth/flowdata", data);
+        // Emit the data to the server
+        socket.emit("flowData", data);
       } catch (error) {
         console.error("Error sending data:", error);
       }
@@ -128,7 +128,6 @@ const DnDFlow = () => {
 
   const onRestore = useCallback(() => {
     const restoreFlow = async () => {
-      // const flow = JSON.parse(localStorage.getItem(flowKey));
       const ipAddress = await getData();
       const flow1 = await axios.get(
         `http://localhost:5001/api/v1/auth/flowdata/${ipAddress}`
@@ -138,11 +137,8 @@ const DnDFlow = () => {
       console.log(flow);
 
       if (nodes && edges && viewport) {
-        // Set nodes and edges in the React Flow state
         setNodes(nodes);
         setEdges(edges);
-
-        // Update the viewport position and zoom
         screenToFlowPosition({
           x: viewport.x || 0,
           y: viewport.y || 0,
@@ -166,6 +162,21 @@ const DnDFlow = () => {
     };
     setNodes((nds) => nds.concat(newNode));
   }, [setNodes]);
+  socket.on("connect", () => {
+    console.log("Connected to server");
+  });
+  useEffect(() => {
+    socket.on("flowData", (data) => {
+      const { nodes, edges } = data.flow;
+      console.log(nodes);
+      setNodes(nodes);
+      setEdges(edges);
+    });
+
+    return () => {
+      socket.off("flowData"); // Cleanup on unmount
+    };
+  }, []);
 
   return (
     <div className="flex flex-row-reverse flex-grow h-full">
@@ -210,10 +221,12 @@ const DnDFlow = () => {
   );
 };
 
-export default () => (
+const App: React.FC = () => (
   <ReactFlowProvider>
     <DnDProvider>
       <DnDFlow />
     </DnDProvider>
   </ReactFlowProvider>
 );
+
+export default App;
