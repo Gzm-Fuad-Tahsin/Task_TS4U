@@ -3,12 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// import dotenv from "dotenv";
+const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
 const database_1 = __importDefault(require("./config/database"));
 const route_1 = __importDefault(require("./route"));
-// dotenv.config({ path: "./config.env" });
+dotenv_1.default.config({ path: "./config.env" });
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5001;
 (0, database_1.default)();

@@ -29,7 +29,7 @@ const initialNodes = [
   {
     id: "1",
     type: "custom",
-    data: { label: "input node" },
+    data: { label: "input" },
     position: { x: 250, y: 5 },
   },
 ];
@@ -75,7 +75,7 @@ const DnDFlow = () => {
         id: getId(),
         type: "custom",
         position,
-        data: { label: `${type} node` },
+        data: { label: `${type}` },
       };
 
       setNodes((nds) => nds.concat(newNode));
@@ -168,8 +168,8 @@ const DnDFlow = () => {
   }, [setNodes]);
 
   return (
-    <div className="dndflow">
-      <div className="reactflow-wrapper" ref={reactFlowWrapper}>
+    <div className="flex flex-row-reverse flex-grow h-full">
+      <div className="flex-grow h-full" ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}

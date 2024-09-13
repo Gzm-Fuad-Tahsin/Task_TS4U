@@ -11,16 +11,34 @@ function CustomNode({ data }) {
         </div>
       </div>
 
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-16 !bg-teal-500"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-16 !bg-teal-500"
-      />
+      {data.label === 'input' && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className="w-16 !bg-teal-500"
+        />
+      )}
+      {data.label === 'output' && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          className="w-16 !bg-teal-500"
+        />
+      )}
+      {(data.label !== 'input' && data.label !== 'output') && (
+        <>
+          <Handle
+            type="target"
+            position={Position.Top}
+            className="w-16 !bg-teal-500"
+          />
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            className="w-16 !bg-teal-500"
+          />
+        </>
+      )}
     </div>
   );
 }

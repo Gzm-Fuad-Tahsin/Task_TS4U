@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const connectDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const conn = yield (require("mongoose")).connect('mongodb+srv://gazitahsin323:tah12345@cluster0.x4q0a.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0');
+        const conn = yield (require("mongoose")).connect(process.env.MONGO_URL);
         console.log(`Mongodb connected with server: ${conn.connection.host}`);
     }
     catch (error) {
