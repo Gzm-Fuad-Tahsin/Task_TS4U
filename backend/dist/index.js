@@ -20,18 +20,18 @@ const io = new socket_io_1.Server(server, {
         methods: ["GET", "POST"],
     },
 });
-io.listen(5000);
-io.on('connection', (socket) => {
-    console.log('A user connected');
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
-    socket.on('flowData', (data) => {
-        console.log('Received flow data:', data);
-        // Broadcast the data to all connected clients
-        socket.broadcast.emit('flowData', data);
-    });
-});
+// io.listen(5000);
+// io.on('connection', (socket) => {
+//   console.log('A user connected');
+//   socket.on('flowData', (data) => {
+//     console.log('Received flow data:', data);
+//     // Broadcast the data to all connected clients
+//     socket.broadcast.emit('flowData', data);
+//   });
+//   socket.on('disconnect', () => {
+//     console.log('User disconnected');
+//   });
+// });
 (0, database_1.default)();
 const corsOptions = {
     origin: ["http://localhost", "http://localhost:3000"],

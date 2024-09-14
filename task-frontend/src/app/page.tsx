@@ -18,6 +18,8 @@ import CustomNode from "./CustomNode";
 import { DnDProvider, useDnD } from "./DnDContext";
 import "./index.css";
 import Sidebar from "./Sidebar";
+import TextUpdaterNode from "./TextUpdaterNode";
+import TextUpdaterNode1 from "./TextUpdaterNodeMassage";
 
 interface NodeData {
   label: string;
@@ -32,6 +34,9 @@ interface CustomNodeProps {
 
 const nodeTypes = {
   custom: CustomNode,
+  textupdate: TextUpdaterNode,
+  textupdateMsg: TextUpdaterNode1,
+
 };
 
 const initialNodes: CustomNodeProps[] = [
@@ -150,14 +155,49 @@ const DnDFlow: React.FC = () => {
     restoreFlow();
   }, [setNodes, screenToFlowPosition]);
 
+    // Function to handle label updates
+
   const onAdd = useCallback(() => {
     const newNode = {
       id: getId(),
-      data: { label: "Added node" },
-      type: "custom",
+      type: "textupdate",
       position: {
         x: (Math.random() - 0.5) * 400,
         y: (Math.random() - 0.5) * 400,
+      },
+      data: {
+        label: "New Node", // Set default label
+        onLabelChange: (id, newLabel) => {
+          // Update label on nodes state
+          setNodes((nds) =>
+            nds.map((node) =>
+              node.id === id ? { ...node, data: { ...node.data, label: newLabel } } : node
+            )
+          );
+        },
+      },
+    };
+    setNodes((nds) => nds.concat(newNode));
+  }, [setNodes]);
+
+  const onAddMassage = useCallback(() => {
+    const newNode = {
+      id: getId(),
+      type: "textupdateMsg",
+      position: {
+        x: (Math.random() - 0.5) * 400,
+        y: (Math.random() - 0.5) * 400,
+      },
+      data: {
+        label: "New Node", // Set default label
+        onLabelChange: (id, newLabel) => {
+          // Update label on nodes state
+          setNodes((nds) =>
+            nds.map((node) =>
+              node.id === id ? { ...node, data: { ...node.data, label: newLabel } } : node
+            )
+          );
+        },
       },
     };
     setNodes((nds) => nds.concat(newNode));
@@ -177,6 +217,16 @@ const DnDFlow: React.FC = () => {
       socket.off("flowData"); // Cleanup on unmount
     };
   }, []);
+
+  const sendEmail = async () => {
+    try {
+      const flowData =  rfInstance.toObject()
+      await axios.post('http://localhost:5001/api/v1/auth/sendEmail', { flow: flowData });
+      console.log('Email sent successfully');
+    } catch (error) {
+      console.error('Error sending email', error);
+    }
+  };
 
   return (
     <div className="flex flex-row-reverse flex-grow h-full">
@@ -211,8 +261,21 @@ const DnDFlow: React.FC = () => {
               onClick={onAdd}
               className="p-2 border-black border-2 rounded-md mr-2"
             >
-              add node
+              add email adddress
             </button>
+            <button
+              onClick={onAddMassage}
+              className="p-2 border-black border-2 rounded-md mr-2"
+            >
+              add massage
+            </button>
+            <button
+              onClick={sendEmail}
+              className="p-2 border-black border-2 rounded-md mr-2"
+            >
+              start
+            </button>
+
           </Panel>
         </ReactFlow>
       </div>

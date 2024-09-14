@@ -8,4 +8,5 @@ const nodeController_1 = require("./controller/nodeController");
 const router = express_1.default.Router();
 router.post('/flowdata', nodeController_1.saveNode);
 router.get('/flowdata/:ipAddress', nodeController_1.getNodes);
+router.post('/sendEmail', nodeController_1.sendMailFunctiom);
 exports.default = router;

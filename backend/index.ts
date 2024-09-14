@@ -19,21 +19,21 @@ const io = new SocketIOServer(server, {
   },
 });
 
-io.listen(5000);
+// io.listen(5000);
 
-io.on('connection', (socket) => {
-  console.log('A user connected');
+// io.on('connection', (socket) => {
+//   console.log('A user connected');
 
-  socket.on('flowData', (data) => {
-    console.log('Received flow data:', data);
-    // Broadcast the data to all connected clients
-    socket.broadcast.emit('flowData', data);
-  });
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
+//   socket.on('flowData', (data) => {
+//     console.log('Received flow data:', data);
+//     // Broadcast the data to all connected clients
+//     socket.broadcast.emit('flowData', data);
+//   });
+//   socket.on('disconnect', () => {
+//     console.log('User disconnected');
+//   });
 
-});
+// });
 
 connectDB();
 

@@ -12,8 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getNodes = exports.saveNode = void 0;
+exports.sendMailFunctiom = exports.getNodes = exports.saveNode = void 0;
 const nodeModel_1 = __importDefault(require("../model/nodeModel")); // Make sure your model file has TypeScript definitions
+const sendMail_1 = __importDefault(require("./sendMail"));
 const saveNode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { ipAddress, flow } = req.body;
@@ -50,3 +51,27 @@ const getNodes = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getNodes = getNodes;
+const sendMailFunctiom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { flow } = req.body;
+    const nodes = flow.nodes;
+    // Extract the email and message from the flow data
+    let email = '';
+    let message = '';
+    nodes.forEach((node) => {
+        if (node.type === 'textupdate') {
+            email = node.data.label; // Email from the node
+        }
+        if (node.type === 'textupdateMsg') {
+            message = node.data.label; // Message from the node
+        }
+    });
+    if (!email || !message) {
+        res.status(400).json({ success: false, message: 'Email or message is missing in the flow data' });
+    }
+    (0, sendMail_1.default)({
+        to: email,
+        subject: "Automate Mail",
+        message: message
+    });
+});
+exports.sendMailFunctiom = sendMailFunctiom;
